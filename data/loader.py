@@ -1,7 +1,7 @@
 from ..model.instance import BinPackingInstance
 from ..model.item import Item
 
-def load_beng_instance(file_path: str) -> "BinPackingInstance":
+def load_beng_instance(file_path: str) -> BinPackingInstance:
     """Load a BENG instance from the 2DPackLib dataset"""    
     items = []
     with open(file_path, "r") as f:

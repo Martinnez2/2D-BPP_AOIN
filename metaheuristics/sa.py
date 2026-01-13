@@ -13,7 +13,7 @@ class SimulatedAnnealing:
 
     def __init__(self,
              initial_solution: Solution,
-             instance: BinPackingInstance,   # dodaj instance
+             instance: BinPackingInstance,
              decoder: Decoder,
              fitness_evaluator,
              T0: float = 100.0,
@@ -40,6 +40,7 @@ class SimulatedAnnealing:
         Generates a neighbor solution using inversion mutation.
         Randomly selects two positions and inverts the sublist between them.
         """
+        
         perm = solution.permutation.copy()
         n = len(perm)
         i, j = sorted(random.sample(range(n), 2))

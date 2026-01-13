@@ -2,7 +2,6 @@ from copy import deepcopy
 from .instance import BinPackingInstance
 from .placement import Placement
 from ..heuristics.decoder import Decoder
-# from ..heuristics.bottomleft import BottomLeft
 
 class Solution():
     def __init__(self, permutation: list[int]):
@@ -22,10 +21,11 @@ class Solution():
 
 
     def evaluate(self, instance: BinPackingInstance, decoder: Decoder, fitness_evaluator):
-        # Steps:
-        # 1. Decode the permutation into placements.
-        # 2. Calculate the fitness based on placements.
-        # 3. Store placements and fitness inside the solution.
+        """
+        The algorithm decodes the permutation into placements, computes the fitness
+        value based on these placements, and stores both the placements and the
+        fitness value in the solution object.
+        """
         self.placements = decoder.decode(instance, self.permutation)
         self.fitness = fitness_evaluator.evaluate(self.placements)
         self.decoder_name = decoder.name
@@ -39,7 +39,7 @@ class Solution():
     def __repr__(self) -> str:
         return (
             f"Solution(fitness={self.fitness}, "
-            f"permutation={self.permutation}, "
+            # f"permutation={self.permutation},"
             f"placements={len(self.placements)} items, "
             f"decoder={self.decoder_name})"
         )

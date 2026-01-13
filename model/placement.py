@@ -19,14 +19,6 @@ class Placement():
     def area(self) -> float:
         return self.width * self.height 
 
-    # @property
-    # def bottom(self) -> float:
-    #     return self.y
-
-    # @property
-    # def left(self) -> float:
-    #     return self.x
-
     @property
     def right(self) -> float:
         """Returns the x-coordinate of the right edge."""
@@ -53,17 +45,6 @@ class Placement():
             self.top <= other.y or
             other.top <= self.y
         )
-        
-    # def inside_bin(self, bin_width: float, bin_height: float) -> bool:
-    #     """
-    #     Checks whether the placement fits entirely inside the bin    
-    #     """
-    #     return (
-    #         self.x >=0 and
-    #         self.y >= 0 and
-    #         self.right <= bin_width and
-    #         self.height <= bin_height
-    #     )
     
     
     def inside_strip(self, strip_width: float) -> bool:
@@ -85,9 +66,3 @@ class Placement():
             f"w={self.width}, h={self.height}, "
             # f"bin={self.bin_id})"
         )
-
-class PackingResult():
-    def __init__(self, placements: list[Placement]):
-        used_height: float = 0
-        used_bins: int = 0
-        pass
