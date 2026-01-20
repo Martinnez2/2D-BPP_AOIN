@@ -8,7 +8,6 @@ class Decoder():
     A decoder maps a permutation of items to concrete placements
     """
 
-
     def __init__(self):
         pass
 

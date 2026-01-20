@@ -29,9 +29,6 @@ class Placement():
         """Returns the y-coordinate of the top edge."""
         return self.y + self.height
 
-    def intersects(self, other):
-        return False
-
 
     def intersects(self, other: "Placement"):
         
@@ -64,5 +61,4 @@ class Placement():
             f"Placement(item={self.id}, "
             f"x={self.x}, y={self.y}, "
             f"w={self.width}, h={self.height}, "
-            # f"bin={self.bin_id})"
         )

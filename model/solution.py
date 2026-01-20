@@ -39,7 +39,6 @@ class Solution():
     def __repr__(self) -> str:
         return (
             f"Solution(fitness={self.fitness}, "
-            # f"permutation={self.permutation},"
             f"placements={len(self.placements)} items, "
             f"decoder={self.decoder_name})"
         )

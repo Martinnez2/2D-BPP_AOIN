@@ -9,7 +9,7 @@ def plot_convergence(bests, worsts, avgs, path, title):
     plt.plot(bests, label="Best")
     plt.plot(worsts, label="Worst")
     plt.plot(avgs, label="Average")
-    plt.xlabel("Iteration")
+    plt.xlabel("Generation")
     plt.ylabel("Fitness")
     plt.title(title)
     plt.legend()

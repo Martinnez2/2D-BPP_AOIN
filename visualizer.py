@@ -7,7 +7,7 @@ class Visualizer:
     """Visualizes a 2D Strip Packing solution."""
 
     @staticmethod
-    def draw_solution(placements: List[Placement], bin_width: float, filename: str = "solution.png", best_fitness: float = None):
+    def draw_solution(placements: List[Placement], bin_width: float, filename: str = "solution.png", best_fitness: float = None, metaheuristic_name: str = "", heuristic_name: str = ""):
         """
         Draws the solution and optionally saves it to a file.
         :param placements: list of Placement objects
@@ -24,9 +24,9 @@ class Visualizer:
         ax.set_aspect('equal')
         ax.set_xlabel("Width")
         ax.set_ylabel("Height")
-        title = "2D Strip Packing Solution"
+        title = f"{metaheuristic_name} - {heuristic_name}"
         if best_fitness is not None:
-            title += f"\nBest fitness: {best_fitness:.2f}"
+            title += f"\nFitness: {best_fitness:.2f}"
         ax.set_title(title)
 
         for p in placements:

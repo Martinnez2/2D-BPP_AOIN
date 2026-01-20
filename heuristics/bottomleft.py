@@ -4,41 +4,48 @@ from ..model.placement import Placement
 
 
 class BottomLeft(Decoder):
-
     name = 'BL'
 
     def decode(self, instance: BinPackingInstance, permutation: list[int]) -> list[Placement]:
         placements: list[Placement] = []
-
         item_map = {item.id: item for item in instance.items}
-        
+
         for item_id in permutation:
-            item = item_map.get(item_id)
+            item = item_map[item_id]
 
-            candidate_positions = [(0,0)]
+            best_pos = None
+            best_key = None  # (y, x)
 
+            # kandydaci X: lewa ściana + prawe krawędzie paczek
+            candidate_x = {0}
             for p in placements:
-                candidate_positions.append((p.right, p.y))
-                candidate_positions.append((p.x, p.top))
+                candidate_x.add(p.right)
 
-            candidate_positions.sort(key=lambda pos: (pos[1], pos[0]))
-
-            for x, y in candidate_positions:
-                new_placement = Placement(item, x, y)
-
-                if new_placement.right > instance.bin_width:
+            for x in sorted(candidate_x):
+                if x + item.width > instance.bin_width:
                     continue
 
-                collision = any(new_placement.intersects(p) for p in placements)
-                if not collision:
-                    placements.append(Placement(item, x, y))
-                    break
-            else:
-                overlap_tops = [p.top for p in placements if not (p.right <= 0 or p.x >= item.width)]
-                y = max(overlap_tops, default=0)
-                placements.append(Placement(item, 0, y))
+                # początkowo paczka spada maksymalnie w dół (y=0)
+                y = 0
+
+                # znajdź najwyższą paczkę pod paczką w tym X
+                for p in placements:
+                    overlap_x = not (x + item.width <= p.x or x >= p.right)
+                    if overlap_x:
+                        y = max(y, p.top)  # ustaw paczkę na szczycie przeszkody
+
+                placement = Placement(item, x, y)
+
+                # zabezpieczenie przed kolizją
+                if any(placement.intersects(p) for p in placements):
+                    continue
+
+                key = (y, x)
+                if best_key is None or key < best_key:
+                    best_key = key
+                    best_pos = placement
+
+            # w BL paczka zawsze się mieści
+            placements.append(best_pos)
+
         return placements
-
-
-
-    
