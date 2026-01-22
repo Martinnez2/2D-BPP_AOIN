@@ -4,62 +4,108 @@ from ..model.placement import Placement
 
 
 class BottomLeftFill(Decoder):
-    """
-    Bottom-Left-Fill (BLF) heuristic for 2D Strip Packing.
-    Wypełnia luki pod i między paczkami.
-    """
-
+  
     name = "BLF"
 
     def decode(self, instance: BinPackingInstance, permutation: list[int]) -> list[Placement]:
-        placements: list[Placement] = []
+        placements = []
         item_map = {item.id: item for item in instance.items}
+
+        INF = 10**9
+        free_rects = [(0, 0, instance.bin_width, INF)]
 
         for item_id in permutation:
             item = item_map[item_id]
-            best_placement = None
 
-            # lista wszystkich potencjalnych punktów startowych
-            candidate_positions = {(0, 0)}
 
-            # generujemy punkty przy prawej krawędzi i nad istniejącymi paczkami
-            for p in placements:
-                if p.right + item.width <= instance.bin_width:
-                    candidate_positions.add((p.right, p.y))  # punkt przy prawej krawędzi
-                candidate_positions.add((p.x, p.top))        # punkt nad paczką
+            best = None
+            best_key = None
 
-            # sortujemy: najniżej -> najbardziej w lewo
-            candidate_positions = sorted(candidate_positions, key=lambda pos: (pos[1], pos[0]))
+            for r in free_rects:
+                rx, ry, rw, rh = r
+                if item.width <= rw and item.height <= rh:
+                    key = (ry, rx)
+                    if best_key is None or key < best_key:
+                        best_key = key
+                        best = r
 
-            for x, y in candidate_positions:
-                # opuszczamy paczkę w dół tak, żeby opierała się o istniejące paczki
-                y_drop = y
-                for p in placements:
-                    # jeśli paczka nachodzi w poziomie na istniejącą paczkę
-                    if not (x + item.width <= p.x or x >= p.right):
-                        y_drop = max(y_drop, p.top)
+            if best is None:
+                current_height = max((p.top for p in placements), default=0)
+                best = (0, current_height, instance.bin_width, INF)
+                free_rects.append(best)
 
-                # jeśli paczka wykracza poza bin_width, pomijamy
-                if x + item.width > instance.bin_width:
-                    continue
+            rx, ry, rw, rh = best
+            placement = Placement(item, rx, ry)
+            placements.append(placement)
 
-                candidate = Placement(item, x, y_drop)
+            new_free = []
 
-                # sprawdzamy kolizje
-                if any(candidate.intersects(p) for p in placements):
-                    continue
+            for r in free_rects:
+                if not self._rect_intersect(r, placement):
+                    new_free.append(r)
+                else:
+                    new_free.extend(self._split_rect(r, placement))
 
-                # wybieramy najniższy punkt, potem najbardziej w lewo
-                if best_placement is None or \
-                   (candidate.y < best_placement.y) or \
-                   (candidate.y == best_placement.y and candidate.x < best_placement.x):
-                    best_placement = candidate
-
-            # fallback: położenie na szczycie układu
-            if best_placement is None:
-                top_y = max((p.top for p in placements), default=0)
-                best_placement = Placement(item, 0, top_y)
-
-            placements.append(best_placement)
+            free_rects = self._prune(new_free)
 
         return placements
+
+    # ---------- GEOMETRY ----------
+
+    @staticmethod
+    def _rect_intersect(rect, placement):
+        rx, ry, rw, rh = rect
+        return not (
+            rx + rw <= placement.x or
+            placement.right <= rx or
+            ry + rh <= placement.y or
+            placement.top <= ry
+        )
+
+    @staticmethod
+    def _split_rect(rect, placement):
+        rx, ry, rw, rh = rect
+        px, py = placement.x, placement.y
+        pw, ph = placement.width, placement.height
+
+        new_rects = []
+
+        # left
+        if rx < px:
+            new_rects.append((rx, ry, px - rx, rh))
+
+        # right
+        if rx + rw > px + pw:
+            new_rects.append((px + pw, ry, rx + rw - (px + pw), rh))
+
+        # bottom
+        if ry < py:
+            new_rects.append((rx, ry, rw, py - ry))
+
+        # upper
+        if ry + rh > py + ph:
+            new_rects.append((rx, py + ph, rw, ry + rh - (py + ph)))
+
+        return new_rects
+
+    @staticmethod
+    def _prune(rects):
+        """Removes regions dominated by others."""
+        result = []
+        for r in rects:
+            rx, ry, rw, rh = r
+            dominated = False
+            for o in rects:
+                if r == o:
+                    continue
+                ox, oy, ow, oh = o
+                if (
+                    rx >= ox and ry >= oy and
+                    rx + rw <= ox + ow and
+                    ry + rh <= oy + oh
+                ):
+                    dominated = True
+                    break
+            if not dominated and rw > 0 and rh > 0:
+                result.append(r)
+        return result

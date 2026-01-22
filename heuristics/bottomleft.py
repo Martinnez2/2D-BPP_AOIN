@@ -7,16 +7,18 @@ class BottomLeft(Decoder):
     name = 'BL'
 
     def decode(self, instance: BinPackingInstance, permutation: list[int]) -> list[Placement]:
+        # To lista paczek które aktualnie są schowane w binie
         placements: list[Placement] = []
+
+        # Dict comprehension - id itemu oraz item
         item_map = {item.id: item for item in instance.items}
 
         for item_id in permutation:
             item = item_map[item_id]
 
             best_pos = None
-            best_key = None  # (y, x)
+            best_key = None 
 
-            # kandydaci X: lewa ściana + prawe krawędzie paczek
             candidate_x = {0}
             for p in placements:
                 candidate_x.add(p.right)
@@ -25,27 +27,34 @@ class BottomLeft(Decoder):
                 if x + item.width > instance.bin_width:
                     continue
 
-                # początkowo paczka spada maksymalnie w dół (y=0)
                 y = 0
 
-                # znajdź najwyższą paczkę pod paczką w tym X
                 for p in placements:
                     overlap_x = not (x + item.width <= p.x or x >= p.right)
                     if overlap_x:
-                        y = max(y, p.top)  # ustaw paczkę na szczycie przeszkody
+                        y = max(y, p.top) 
 
-                placement = Placement(item, x, y)
+                x_left = x
+                while x_left > 0:
+                    test_placement = Placement(item, x_left - 1, y)
+                    if any(test_placement.intersects(other=p) for p in placements):
+                        break
+                    x_left -= 1
+                    
+                placement = Placement(item, x_left, y)
 
-                # zabezpieczenie przed kolizją
-                if any(placement.intersects(p) for p in placements):
-                    continue
+                # if any(placement.intersects(other=p) for p in placements):
+                #     continue
 
-                key = (y, x)
+                key = (y, x_left)
                 if best_key is None or key < best_key:
                     best_key = key
                     best_pos = placement
 
-            # w BL paczka zawsze się mieści
+            if best_pos is None:
+                top_y = max((p.top for p in placements), default=0)
+                best_pos = Placement(item, 0, top_y)
+
             placements.append(best_pos)
 
         return placements

@@ -14,9 +14,9 @@ from .utils import *
 
 
 # CONFIGURATION
-INSTANCE_NAME = "BENG03.ins2D"
+INSTANCE_NAME = "BENG06.ins2D"
 INSTANCE_SHORT = INSTANCE_NAME.split('.')[0].lower()
-DECODER_TYPE = 2   # "1 = BL" or "2 = BLF"
+DECODER_TYPE = 1   # "1 = BL" or "2 = BLF"
 METAHEURISTIC = "GA" # "SA" or "GA"
 K_REPEAT_RANDOM = 1000
 N_RUNS = 10
@@ -123,6 +123,5 @@ def main():
                                 metaheuristic_name="Random algorithm",
                                 heuristic_name=decoder.name)
         
-  
 if __name__ == "__main__":
     main()
